@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PresensiController;
+use App\Http\Controllers\RevisiPresensiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,4 +19,7 @@ Route::middleware(['auth.dosen'])->group(function () {
 
     Route::get('/presensi/{kode_mk}/{semester}', [PresensiController::class, 'inputPresensi'])->name('input-presensi');
     Route::post('/presensi/simpan', [PresensiController::class, 'simpanPresensi'])->name('simpan-presensi');
+
+    Route::get('/revisi-presensi/{kode_mk}/{semester}', [RevisiPresensiController::class, 'revisiPresensi'])->name('input-revisi-presensi');
+    Route::post('/revisi-presensi/simpan', [RevisiPresensiController::class, 'simpanRevisiPresensi'])->name('simpan-revisi-presensi');
 });

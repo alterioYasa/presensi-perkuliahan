@@ -41,6 +41,12 @@ class PresensiController extends Controller
 
         $dosen = session('dosen');
 
+        $mahasiswaKelas = PesertaKelasMatakuliah::where([
+            'kode_mk' => $request->kode_mk,
+            'nik' => $dosen->nik,
+            'semester' => $request->semester
+        ])->pluck('nim')->toArray();
+
         try {
             DB::beginTransaction();
 
@@ -56,14 +62,16 @@ class PresensiController extends Controller
                 ]
             );
 
-            foreach ($request->status_presensi as $nim => $status) {
+            foreach ($mahasiswaKelas as $nim) {
+                $status = $request->status_presensi[$nim] ?? 'A';
+
                 Presensi::updateOrCreate(
                     [
                         'kode_mk' => $request->kode_mk,
                         'nik' => $dosen->nik,
                         'semester' => $request->semester,
-                        'nim' => $nim,
-                        'pertemuan' => $request->pertemuan
+                        'pertemuan' => $request->pertemuan,
+                        'nim' => $nim
                     ],
                     [
                         'status_presensi' => $status
@@ -72,7 +80,7 @@ class PresensiController extends Controller
             }
 
             DB::commit();
-            
+
             return redirect()->route('dashboard')->with('success', 'Presensi berhasil disimpan!');
         } catch (\Throwable $th) {
             DB::rollBack();

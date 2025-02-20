@@ -35,7 +35,10 @@
                         <a href="{{ route('input-presensi', ['kode_mk' => $j->kode_mk, 'semester' => $j->semester]) }}">
                             Input Presensi
                         </a>
-                    </td>
+                        <a href="{{ route('input-revisi-presensi', ['kode_mk' => $j->kode_mk, 'semester' => $j->semester]) }}">
+                            Revisi Presensi
+                        </a>
+                    </td>   
                 </tr>
             @empty
                 <tr>

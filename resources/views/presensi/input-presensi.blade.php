@@ -38,7 +38,8 @@
                         <td>{{ $m->nim }}</td>
                         <td>{{ $m->mahasiswa->nama }}</td>
                         <td>
-                            <input type="checkbox" name="status_presensi[{{ $m->nim }}]" value="H"> Hadir
+                            <input type="hidden" name="status_presensi[{{ $m->nim }}]" value="A">
+                            <input type="checkbox" name="status_presensi[{{ $m->nim }}]" value="H">
                         </td>
                     </tr>
                 @endforeach
