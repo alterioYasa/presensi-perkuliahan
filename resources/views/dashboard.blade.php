@@ -19,6 +19,7 @@
                 <th>Tanggal</th>
                 <th>SKS</th>
                 <th>Jam Mulai</th>
+                <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -30,6 +31,11 @@
                     <td>{{ $j->tanggal }}</td>
                     <td>{{ $j->matakuliah->sks }}</td>
                     <td>{{ $j->jam_mulai }}</td>
+                    <td>
+                        <a href="{{ route('input-presensi', ['kode_mk' => $j->kode_mk, 'semester' => $j->semester]) }}">
+                            Input Presensi
+                        </a>
+                    </td>
                 </tr>
             @empty
                 <tr>
