@@ -1,87 +1,89 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Dosen</title>
-</head>
-<body>
-    <h2>Selamat Datang, {{ $dosen->nama }}</h2>
-    <p>NIK: {{ $dosen->nik }}</p>
+@extends('layouts.app')
 
-    <h3>Daftar Perkuliahan Anda</h3>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Kode MK</th>
-                <th>Nama Mata Kuliah</th>
-                <th>Semester</th>
-                <th>Tanggal</th>
-                <th>SKS</th>
-                <th>Jam Mulai</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($jadwal as $j)
-                <tr>
-                    <td>{{ $j->kode_mk }}</td>
-                    <td>{{ $j->matakuliah->nama_mk ?? '-' }}</td>
-                    <td>{{ $j->semester }}</td>
-                    <td>{{ $j->tanggal }}</td>
-                    <td>{{ $j->matakuliah->sks }}</td>
-                    <td>{{ $j->jam_mulai }}</td>
-                    <td>
-                        <a href="{{ route('input-presensi', ['kode_mk' => $j->kode_mk, 'semester' => $j->semester]) }}">
-                            Input Presensi
-                        </a>
+@section('title', 'Dashboard Dosen')
 
-                        <a href="{{ route('input-revisi-presensi', ['kode_mk' => $j->kode_mk, 'semester' => $j->semester]) }}">
-                            Revisi Presensi
-                        </a>
+@section('content')
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Selamat Datang, {{ $dosen->nama }}</h2>
+        <a href="{{ route('logout') }}" class="btn btn-danger">Logout</a>
+    </div>
+    <p><strong>NIK:</strong> {{ $dosen->nik }}</p>
 
-                        <a class="btn btn-primary print-rekap"
-                            href="#"
-                            data-kode-mk="{{ $j->kode_mk }}"
-                            data-semester="{{ $j->semester }}">
-                            Print Rekap
-                        </a>
-                        
-                    </td>   
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="5">Tidak ada jadwal perkuliahan.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+    <!-- Tombol Generate Rekap -->
+    <div class="mb-3">
+        <a href="{{ route('generate-rekap-harian') }}" class="btn btn-primary" target="_blank">
+            Generate & Download Rekap Harian
+        </a>
+    </div>    
 
-    <br>
-    <a href="{{ route('logout') }}">Logout</a>
+    <!-- Daftar Perkuliahan -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Daftar Perkuliahan Anda</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Kode MK</th>
+                        <th>Nama Mata Kuliah</th>
+                        <th>Semester</th>
+                        <th>Tanggal</th>
+                        <th>SKS</th>
+                        <th>Jam Mulai</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($jadwal as $j)
+                        <tr>
+                            <td>{{ $j->kode_mk }}</td>
+                            <td>{{ $j->matakuliah->nama_mk ?? '-' }}</td>
+                            <td>{{ $j->semester }}</td>
+                            <td>{{ $j->tanggal }}</td>
+                            <td>{{ $j->matakuliah->sks }}</td>
+                            <td>{{ $j->jam_mulai }}</td>
+                            <td>
+                                <a href="{{ route('input-presensi', ['kode_mk' => $j->kode_mk, 'semester' => $j->semester]) }}" class="btn btn-success btn-sm">Input Presensi</a>
 
-    <div id="printModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 id="modalTitle" class="modal-title">Print Rekap Kehadiran</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <embed id="pdfViewer" height="1000px" type="application/pdf" width="100%">
-                </div>
+                                <a href="{{ route('input-revisi-presensi', ['kode_mk' => $j->kode_mk, 'semester' => $j->semester]) }}" class="btn btn-warning btn-sm">Revisi Presensi</a>
+
+                                <button class="btn btn-primary btn-sm print-rekap" 
+                                    data-kode-mk="{{ $j->kode_mk }}" 
+                                    data-semester="{{ $j->semester }}">
+                                    Print Rekap
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center">Tidak ada jadwal perkuliahan.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Print Rekap -->
+<div id="printModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="modalTitle" class="modal-title">Print Rekap Kehadiran</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <embed id="pdfViewer" height="600px" type="application/pdf" width="100%">
             </div>
         </div>
     </div>
+</div>
+@endsection
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</body>
-</html>
-
+@push('scripts')
 <script>
 $(document).ready(function () {
     $(".print-rekap").click(async function () {
@@ -135,4 +137,5 @@ $(document).ready(function () {
         }
     });
 });
-</script>    
+</script>
+@endpush

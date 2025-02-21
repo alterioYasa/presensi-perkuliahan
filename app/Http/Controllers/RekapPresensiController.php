@@ -6,6 +6,9 @@ use App\Models\KelasMatakuliah;
 use App\Models\Presensi;
 use Illuminate\Http\Request;
 use Mpdf\Mpdf;
+use TCPDF;
+use Undika\PdfGenerator\PdfRekapPresensi;
+use ZipArchive;
 
 class RekapPresensiController extends Controller
 {
@@ -104,5 +107,92 @@ class RekapPresensiController extends Controller
         return response()->json([
             'pdf_base64' => base64_encode($pdf)
         ]);
+    }
+
+    public function generateRekapHarian()
+    {
+        $mkWithPresensi = Presensi::select('kode_mk')
+            ->distinct()
+            ->pluck('kode_mk')
+            ->toArray();
+
+        $kelasList = KelasMatakuliah::with(['matakuliah', 'dosen'])
+            ->whereIn('kode_mk', $mkWithPresensi)
+            ->get();
+
+        $files = [];
+        $storagePath = storage_path('app/rekap_harian');
+
+        if (!file_exists($storagePath)) {
+            mkdir($storagePath, 0777, true);
+        }
+
+        foreach ($kelasList as $kelas) {
+            $presensiPerPertemuan = Presensi::where('kode_mk', $kelas->kode_mk)
+                ->where('semester', $kelas->semester)
+                ->where('nik', $kelas->nik)
+                ->orderBy('pertemuan')
+                ->get()
+                ->groupBy('pertemuan');
+
+            foreach ($presensiPerPertemuan as $pertemuan => $presensiData) {
+                $pdf = new PdfRekapPresensi(
+                    new TCPDF(),
+                    $kelas->semester,
+                    $kelas->kode_mk,
+                    $kelas->matakuliah->nama_mk ?? '-',
+                    $kelas->nik,
+                    $kelas->dosen->nama ?? '-',
+                    $pertemuan
+                );
+
+                foreach ($presensiData as $presensi) {
+                    $pdf->addDataPresensi(
+                        $presensi->nim,
+                        $presensi->mahasiswa->nama ?? '-',
+                        $presensi->status_presensi === 'H'
+                    );
+                }
+
+                $fileName = $pdf->generatePdfAsFile($storagePath);
+                $pdfPath = "{$storagePath}/{$fileName}.pdf";
+
+                if (file_exists($pdfPath)) {
+                    $files[] = $pdfPath;
+                } else {
+                    \Log::error("File PDF tidak ditemukan: " . $pdfPath);
+                }
+            }
+        }
+
+
+        $zipPath = storage_path('app/rekap_harian/rekap_harian.zip');
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+            foreach ($files as $file) {
+                if (file_exists($file)) {
+                    $zip->addFile($file, basename($file));
+                } else {
+                    \Log::error("File tidak ditemukan: " . $file);
+                }
+            }
+            $zip->close();
+        } else {
+            \Log::error("Gagal membuka file ZIP untuk ditulis.");
+        }
+
+        return response()->download($zipPath)->deleteFileAfterSend();
+    }
+
+    public function downloadRekapHarian()
+    {
+        $zipPath = storage_path('app/rekap_harian/rekap_harian.zip');
+
+        if (file_exists($zipPath)) {
+            return response()->download($zipPath)->deleteFileAfterSend();
+        }
+
+        return response()->json(['message' => 'File tidak ditemukan'], 404);
     }
 }

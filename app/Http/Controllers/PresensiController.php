@@ -86,4 +86,30 @@ class PresensiController extends Controller
             DB::rollBack();
         }
     }
+
+    public function getPresensi($kode_mk, $semester, $pertemuan)
+    {
+        $presensi = Presensi::where('kode_mk', $kode_mk)
+            ->where('semester', $semester)
+            ->where('pertemuan', $pertemuan)
+            ->with('mahasiswa')
+            ->get();
+
+        $realisasi = Realisasi::where('kode_mk', $kode_mk)
+            ->where('semester', $semester)
+            ->where('pertemuan', $pertemuan)
+            ->first();
+
+        return response()->json([
+            'presensi' => $presensi->map(function ($p) {
+                return [
+                    'nim' => $p->nim,
+                    'nama' => $p->mahasiswa->nama ?? '-',
+                    'status_presensi' => $p->status_presensi,
+                ];
+            }),
+            'realisasi_perkuliahan' => $realisasi->realisasi_perkuliahan ?? '',
+            'alasan_revisi' => $realisasi->alasan_revisi ?? '',
+        ]);
+    }
 }

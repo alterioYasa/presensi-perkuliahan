@@ -1,0 +1,20 @@
+{
+    "name": "undika-ppti/pdf-creator",
+    "description": "Modul untuk generate pdf untuk keperluan skill test calon staf PPTI Undika.",
+    "type": "library",
+    "version": "1.1.0",
+    "authors": [
+        {
+            "name": "Rahman Nur Hadi",
+            "email": "rahman@dinamika.ac.id"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Undika\\PdfGenerator\\": "src/"
+        }
+    },
+    "require": {
+        "tecnickcom/tcpdf": "^6.3"
+    }
+}

@@ -15,10 +15,14 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
+Route::get('/generate-rekap-harian', [RekapPresensiController::class, 'generateRekapHarian'])->name('generate-rekap-harian');
+Route::get('/download-rekap-harian', [RekapPresensiController::class, 'downloadRekapHarian']);
+
 Route::middleware(['auth.dosen'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/presensi/{kode_mk}/{semester}', [PresensiController::class, 'inputPresensi'])->name('input-presensi');
+    Route::get('/get-presensi/{kode_mk}/{semester}/{pertemuan}', [PresensiController::class, 'getPresensi']);
     Route::post('/presensi/simpan', [PresensiController::class, 'simpanPresensi'])->name('simpan-presensi');
 
     Route::get('/revisi-presensi/{kode_mk}/{semester}', [RevisiPresensiController::class, 'revisiPresensi'])->name('input-revisi-presensi');

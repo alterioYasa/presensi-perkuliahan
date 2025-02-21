@@ -25,7 +25,19 @@ class RevisiPresensiController extends Controller
             ->where('semester', $semester)
             ->first();
 
-        return view('presensi.input-revisi', compact('presensi', 'kode_mk', 'semester', 'dosen', 'realisasi'));
+        $daftarPertemuan = Presensi::where('kode_mk', $kode_mk)
+            ->where('semester', $semester)
+            ->distinct()
+            ->pluck('pertemuan')
+            ->sort()
+            ->toArray();
+
+        $peserta = PesertaKelasMatakuliah::where('kode_mk', $kode_mk)
+            ->where('semester', $semester)
+            ->with('mahasiswa')
+            ->get();
+
+        return view('presensi.input-revisi', compact('presensi', 'kode_mk', 'semester', 'dosen', 'realisasi', 'daftarPertemuan', 'peserta'));
     }
 
     public function simpanRevisiPresensi(Request $request)
@@ -49,18 +61,26 @@ class RevisiPresensiController extends Controller
         try {
             DB::beginTransaction();
 
-            Realisasi::updateOrCreate(
-                [
+            $updated = DB::connection('client')->table('realisasi')
+                ->where('kode_mk', $request->kode_mk)
+                ->where('nik', $dosen->nik)
+                ->where('semester', $request->semester)
+                ->where('pertemuan', $request->pertemuan)
+                ->update([
+                    'realisasi_perkuliahan' => $request->realisasi_perkuliahan,
+                    'alasan_revisi' => $request->alasan_revisi
+                ]);
+
+            if ($updated === 0) {
+                DB::connection('client')->table('realisasi')->insert([
                     'kode_mk' => $request->kode_mk,
                     'nik' => $dosen->nik,
                     'semester' => $request->semester,
-                    'pertemuan' => $request->pertemuan
-                ],
-                [
+                    'pertemuan' => $request->pertemuan,
                     'realisasi_perkuliahan' => $request->realisasi_perkuliahan,
                     'alasan_revisi' => $request->alasan_revisi
-                ]
-            );
+                ]);
+            }
 
             Presensi::where([
                 'kode_mk' => $request->kode_mk,
