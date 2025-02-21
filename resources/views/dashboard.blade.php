@@ -89,7 +89,7 @@ $(document).ready(function () {
     $(".print-rekap").click(async function () {
         let kodeMk = $(this).data("kode-mk");
         let semester = $(this).data("semester");
-        let endpoint = `/rekap-presensi/${kodeMk}/${semester}`;
+        let endpoint = `${window.APP_URL}/rekap-presensi/${kodeMk}/${semester}`;
 
         Swal.fire({
             title: "Loading...",

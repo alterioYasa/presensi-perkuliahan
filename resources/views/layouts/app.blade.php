@@ -26,6 +26,10 @@
     <!-- SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <script>
+        window.APP_URL = "{{ url('/') }}";
+    </script>
+
     <!-- Custom Scripts -->
     @stack('scripts')
 
