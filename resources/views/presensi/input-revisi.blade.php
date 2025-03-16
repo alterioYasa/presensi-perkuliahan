@@ -125,7 +125,7 @@ $(document).ready(function () {
         $("#presensiTableContainer").addClass("d-none");
 
         $.ajax({
-            url: `/get-presensi/{{ $kode_mk }}/{{ $semester }}/${pertemuan}`,
+            url: `${window.APP_URL}/get-presensi/{{ $kode_mk }}/{{ $semester }}/${pertemuan}`,
             method: "GET",
             success: function (response) {
                 $("#loading").addClass("d-none");
